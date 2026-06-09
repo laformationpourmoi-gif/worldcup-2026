@@ -84,6 +84,12 @@ async function buildStats(out) {
     fd('/competitions/WC/scorers?limit=12').catch(() => ({ scorers: [] })),
   ]);
 
+  if (out._debug) out._debug.fdRaw = {
+    standings: (standings.standings || []).length,
+    matches: (matchesRes.matches || []).length,
+    scorers: (scorersRes.scorers || []).length,
+  };
+
   /* groups */
   const groups = (standings.standings || [])
     .filter(s => s.type === 'TOTAL' && GROUP_OF(s.group))
@@ -238,11 +244,21 @@ async function buildNews() {
 /* ── Public entry point ─────────────────────────────────────────────────── */
 export async function buildFreeSnapshot() {
   const out = { updatedAt: Date.now(), status: 'pre' };
+  out._debug = {                                   // temporary diagnostics (no secret leaked)
+    build: 'diag-1',
+    keyPresent: !!FD_KEY,
+    envSeen: {
+      FOOTBALLDATA_KEY: !!process.env.FOOTBALLDATA_KEY,
+      FootDataKey: !!process.env.FootDataKey,
+      FOOTDATA_KEY: !!process.env.FOOTDATA_KEY,
+    },
+    fdError: null,
+  };
   let gotSomething = false;
 
   if (FD_KEY) {
     try { await buildStats(out); gotSomething = true; }
-    catch (e) { console.warn('[free-feed] stats unavailable:', e.message); }
+    catch (e) { console.warn('[free-feed] stats unavailable:', e.message); out._debug.fdError = e.message; }
   } else {
     console.log('[free-feed] No FOOTBALLDATA_KEY — refreshing NEWS only (still free). Add a free key for live stats.');
   }
