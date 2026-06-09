@@ -1,0 +1,23 @@
+# render.yaml — one-click deploy of the World Cup 2026 dashboard on Render (free tier)
+# How to use: push this repo to GitHub, then on render.com → New + → Blueprint → pick the repo.
+# Docs: https://render.com/docs/blueprint-spec
+services:
+  - type: web
+    name: worldcup-2026
+    runtime: node
+    plan: free                 # free tier (sleeps after ~15 min idle, wakes on next request)
+    rootDir: server            # the Node app lives in /server; index.html is served from ../
+    buildCommand: npm install
+    startCommand: npm start
+    healthCheckPath: /api/health
+    autoDeploy: true           # redeploy automatically on every git push
+    envVars:
+      - key: NODE_VERSION
+        value: "20"
+      - key: FEED
+        value: free            # free news with no key; add FOOTBALLDATA_KEY below for live stats
+      - key: CACHE_TTL_MS
+        value: "600000"        # 10 min cache
+      - key: FOOTBALLDATA_KEY
+        sync: false            # OPTIONAL — add your free key in the Render dashboard (kept secret, not in git)
+      # To use the AI feed instead, set FEED=ai and add ANTHROPIC_API_KEY (sync:false) here.

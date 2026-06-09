@@ -1,0 +1,11 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "worldcup26",
+      "runtimeExecutable": "python",
+      "runtimeArgs": ["-m", "http.server", "8765", "--directory", "D:\\projet_python\\Application World cup 2026"],
+      "port": 8765
+    }
+  ]
+}

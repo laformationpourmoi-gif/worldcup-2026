@@ -1,0 +1,20 @@
+{
+  "name": "wc26-ai-feed",
+  "version": "1.0.0",
+  "description": "AI aggregation backend for the World Cup 2026 dashboard — Claude API with web search returns a live JSON snapshot.",
+  "type": "module",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node --watch server.js"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "dependencies": {
+    "@anthropic-ai/sdk": "^0.69.0",
+    "cors": "^2.8.5",
+    "dotenv": "^17.0.0",
+    "express": "^4.21.0"
+  }
+}
