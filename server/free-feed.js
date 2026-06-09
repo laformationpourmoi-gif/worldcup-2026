@@ -24,7 +24,7 @@ const FD_KEY  = process.env.FOOTBALLDATA_KEY || process.env.FootDataKey
 /* ── nation → emoji flag (covers football-data naming + common variants) ─── */
 const FLAGS = {
   'argentina':'🇦🇷','australia':'🇦🇺','austria':'🇦🇹','algeria':'🇩🇿','belgium':'🇧🇪',
-  'bosnia and herzegovina':'🇧🇦','brazil':'🇧🇷','canada':'🇨🇦','cape verde':'🇨🇻','cabo verde':'🇨🇻',
+  'bosnia and herzegovina':'🇧🇦','bosniaherzegovina':'🇧🇦','brazil':'🇧🇷','canada':'🇨🇦','cape verde':'🇨🇻','cape verde islands':'🇨🇻','cabo verde':'🇨🇻',
   'colombia':'🇨🇴','croatia':'🇭🇷','curacao':'🇨🇼','czechia':'🇨🇿','czech republic':'🇨🇿',
   'dr congo':'🇨🇩','congo dr':'🇨🇩','ecuador':'🇪🇨','egypt':'🇪🇬','england':'🏴󠁧󠁢󠁥󠁮󠁧󠁿','france':'🇫🇷',
   'germany':'🇩🇪','ghana':'🇬🇭','haiti':'🇭🇹','iran':'🇮🇷','ir iran':'🇮🇷','iraq':'🇮🇶',
@@ -44,7 +44,7 @@ const RANK = {
   'south korea':22,'ecuador':23,'austria':24,'australia':26,'turkey':27,'turkiye':27,'norway':29,
   'panama':30,'canada':31,'egypt':34,'algeria':35,'scotland':36,'paraguay':39,'tunisia':40,
   'ivory coast':42,'czechia':43,'uzbekistan':50,'qatar':51,'dr congo':56,'iraq':58,'saudi arabia':60,
-  'south africa':61,'jordan':66,'cape verde':68,'cabo verde':68,'ghana':72,'bosnia and herzegovina':74,
+  'south africa':61,'jordan':66,'cape verde':68,'cape verde islands':68,'cabo verde':68,'ghana':72,'bosnia and herzegovina':74,'bosniaherzegovina':74,
   'curacao':82,'haiti':84,'new zealand':86,
 };
 
@@ -87,17 +87,6 @@ async function buildStats(out) {
     fd('/competitions/WC/matches'),
     fd('/competitions/WC/scorers?limit=12').catch(() => ({ scorers: [] })),
   ]);
-
-  if (out._debug) {
-    out._debug.fdRaw = {
-      standings: (standings.standings || []).length,
-      matches: (matchesRes.matches || []).length,
-      scorers: (scorersRes.scorers || []).length,
-    };
-    const s0 = (standings.standings || [])[0] || {};
-    out._debug.fdSample = { stage: s0.stage, type: s0.type, group: s0.group,
-      tableLen: (s0.table || []).length, team0: s0.table?.[0]?.team?.name };
-  }
 
   /* groups — dedupe by group letter, prefer the TOTAL table when several exist */
   const seenGroups = {};
@@ -256,21 +245,11 @@ async function buildNews() {
 /* ── Public entry point ─────────────────────────────────────────────────── */
 export async function buildFreeSnapshot() {
   const out = { updatedAt: Date.now(), status: 'pre' };
-  out._debug = {                                   // temporary diagnostics (no secret leaked)
-    build: 'diag-2',
-    keyPresent: !!FD_KEY,
-    envSeen: {
-      FOOTBALLDATA_KEY: !!process.env.FOOTBALLDATA_KEY,
-      FootDataKey: !!process.env.FootDataKey,
-      FOOTDATA_KEY: !!process.env.FOOTDATA_KEY,
-    },
-    fdError: null,
-  };
   let gotSomething = false;
 
   if (FD_KEY) {
     try { await buildStats(out); gotSomething = true; }
-    catch (e) { console.warn('[free-feed] stats unavailable:', e.message); out._debug.fdError = e.message; }
+    catch (e) { console.warn('[free-feed] stats unavailable:', e.message); }
   } else {
     console.log('[free-feed] No FOOTBALLDATA_KEY — refreshing NEWS only (still free). Add a free key for live stats.');
   }
