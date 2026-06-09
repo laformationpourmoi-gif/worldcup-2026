@@ -71,7 +71,11 @@ const etTime = iso => new Intl.DateTimeFormat('en-GB',
 const etDate = iso => new Intl.DateTimeFormat('en-CA',
   { timeZone: 'America/New_York', year: 'numeric', month: '2-digit', day: '2-digit' }).format(new Date(iso));
 
-const GROUP_OF = g => (g && g.startsWith('GROUP_')) ? g.replace('GROUP_', '') : null;
+const GROUP_OF = g => {
+  const s = String(g || '');
+  const m = s.match(/^group[_\s-]*([A-L])$/i) || s.match(/^([A-L])$/i);  // "GROUP_A" | "Group A" | "A"
+  return m ? m[1].toUpperCase() : null;
+};
 const STAGE = { LAST_16: 'R16', QUARTER_FINALS: 'QF', SEMI_FINALS: 'SF', THIRD_PLACE: '3P', FINAL: 'F' };
 const matchStatus = s => (s === 'IN_PLAY' || s === 'PAUSED') ? 'live'
   : s === 'FINISHED' ? 'finished' : 'upcoming';
@@ -84,26 +88,34 @@ async function buildStats(out) {
     fd('/competitions/WC/scorers?limit=12').catch(() => ({ scorers: [] })),
   ]);
 
-  if (out._debug) out._debug.fdRaw = {
-    standings: (standings.standings || []).length,
-    matches: (matchesRes.matches || []).length,
-    scorers: (scorersRes.scorers || []).length,
-  };
+  if (out._debug) {
+    out._debug.fdRaw = {
+      standings: (standings.standings || []).length,
+      matches: (matchesRes.matches || []).length,
+      scorers: (scorersRes.scorers || []).length,
+    };
+    const s0 = (standings.standings || [])[0] || {};
+    out._debug.fdSample = { stage: s0.stage, type: s0.type, group: s0.group,
+      tableLen: (s0.table || []).length, team0: s0.table?.[0]?.team?.name };
+  }
 
-  /* groups */
-  const groups = (standings.standings || [])
-    .filter(s => s.type === 'TOTAL' && GROUP_OF(s.group))
-    .map(s => ({
-      name: GROUP_OF(s.group),
-      status: s.table.some(t => t.playedGames > 0) ? 'ongoing' : 'upcoming',
-      teams: s.table.map(t => ({
-        name: t.team.name, flag: flagOf(t.team.name), rank: rankOf(t.team.name),
-        pj: t.playedGames, g: t.won, n: t.draw, p: t.lost,
-        gf: t.goalsFor, gc: t.goalsAgainst, pts: t.points,
-        form: (t.form || '').split(/[,\s]+/).filter(Boolean).slice(-5),
-      })),
-    }))
-    .sort((a, b) => a.name.localeCompare(b.name));
+  /* groups — dedupe by group letter, prefer the TOTAL table when several exist */
+  const seenGroups = {};
+  (standings.standings || []).forEach(s => {
+    const name = GROUP_OF(s.group);
+    if (!name || !(s.table || []).length) return;
+    if (!seenGroups[name] || s.type === 'TOTAL') seenGroups[name] = s;
+  });
+  const groups = Object.values(seenGroups).map(s => ({
+    name: GROUP_OF(s.group),
+    status: s.table.some(t => t.playedGames > 0) ? 'ongoing' : 'upcoming',
+    teams: s.table.map(t => ({
+      name: t.team.name, flag: flagOf(t.team.name), rank: rankOf(t.team.name),
+      pj: t.playedGames, g: t.won, n: t.draw, p: t.lost,
+      gf: t.goalsFor, gc: t.goalsAgainst, pts: t.points,
+      form: (t.form || '').split(/[,\s]+/).filter(Boolean).slice(-5),
+    })),
+  })).sort((a, b) => a.name.localeCompare(b.name));
   if (groups.length) out.groups = groups;
 
   /* matches — keep live + finished + the next ~12 upcoming */
@@ -245,7 +257,7 @@ async function buildNews() {
 export async function buildFreeSnapshot() {
   const out = { updatedAt: Date.now(), status: 'pre' };
   out._debug = {                                   // temporary diagnostics (no secret leaked)
-    build: 'diag-1',
+    build: 'diag-2',
     keyPresent: !!FD_KEY,
     envSeen: {
       FOOTBALLDATA_KEY: !!process.env.FOOTBALLDATA_KEY,
