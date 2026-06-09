@@ -16,7 +16,10 @@
    ============================================================================ */
 
 const FD_BASE = 'https://api.football-data.org/v4';
-const FD_KEY  = process.env.FOOTBALLDATA_KEY || '';
+// Accept several env-var names so it works whatever you called it on the host
+// (Vercel won't let you rename a variable, so we match common spellings).
+const FD_KEY  = process.env.FOOTBALLDATA_KEY || process.env.FootDataKey
+             || process.env.FOOTDATA_KEY || process.env.FOOTBALL_DATA_KEY || '';
 
 /* ── nation → emoji flag (covers football-data naming + common variants) ─── */
 const FLAGS = {
