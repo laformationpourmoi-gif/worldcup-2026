@@ -76,7 +76,9 @@ const GROUP_OF = g => {
   const m = s.match(/^group[_\s-]*([A-L])$/i) || s.match(/^([A-L])$/i);  // "GROUP_A" | "Group A" | "A"
   return m ? m[1].toUpperCase() : null;
 };
-const STAGE = { LAST_16: 'R16', QUARTER_FINALS: 'QF', SEMI_FINALS: 'SF', THIRD_PLACE: '3P', FINAL: 'F' };
+const STAGE = { LAST_32: 'R32', LAST_16: 'R16', QUARTER_FINALS: 'QF', SEMI_FINALS: 'SF', THIRD_PLACE: '3P', FINAL: 'F' };
+// Round code used by the match-browser tabs: G1/G2/G3 (group matchdays) then R32/R16/QF/SF/3P/F
+const roundCode = m => (m.stage === 'GROUP_STAGE' || !STAGE[m.stage]) ? ('G' + (m.matchday || 1)) : STAGE[m.stage];
 const matchStatus = s => (s === 'IN_PLAY' || s === 'PAUSED') ? 'live'
   : s === 'FINISHED' ? 'finished' : 'upcoming';
 
@@ -117,7 +119,8 @@ async function buildStats(out) {
       home: { name: m.homeTeam?.name || 'TBD', flag: flagOf(m.homeTeam?.name), rank: rankOf(m.homeTeam?.name) },
       away: { name: m.awayTeam?.name || 'TBD', flag: flagOf(m.awayTeam?.name), rank: rankOf(m.awayTeam?.name) },
       score: hasScore ? { home: ft.home, away: ft.away } : null,
-      group: grp, date: etDate(m.utcDate), time: etTime(m.utcDate), venue: m.venue || '',
+      group: grp, round: roundCode(m), stage: m.stage, matchday: m.matchday || null,
+      date: etDate(m.utcDate), time: etTime(m.utcDate), venue: m.venue || '',
       _utc: m.utcDate,
     };
   });
@@ -167,6 +170,34 @@ async function buildStats(out) {
     goalsAvg: finishedAll.length ? (goals / finishedAll.length).toFixed(1) : '—',
     topGoals: out.scorers?.[0]?.goals ?? '—',
     attendance: '—',
+  };
+
+  /* full schedule (all matches) — powers the round-by-round match browser */
+  out.schedule = all.slice().sort((a, b) => a._utc.localeCompare(b._utc)).map(({ _utc, ...m }) => m);
+
+  /* rich stats + leaders (computed from results + standings) */
+  let biggest = null, highest = null;
+  finishedAll.forEach(m => {
+    const diff = Math.abs(m.score.home - m.score.away), tot = m.score.home + m.score.away;
+    const label = `${m.home.flag} ${m.home.name} ${m.score.home}–${m.score.away} ${m.away.name} ${m.away.flag}`;
+    if (!biggest || diff > biggest.diff) biggest = { diff, label };
+    if (!highest || tot > highest.tot) highest = { tot, label };
+  });
+  const playedTeams = groups.flatMap(g => g.teams).filter(t => t.pj > 0);
+  const pick = (sel, dir = 1) => playedTeams.length ? playedTeams.slice().sort((a, b) => dir * (sel(b) - sel(a)))[0] : null;
+  const bestAtt = pick(t => t.gf), bestDef = pick(t => t.gc, -1), mostW = pick(t => t.g);
+  out.stats = {
+    matchesPlayed: finishedAll.length,
+    matchesTotal: all.length,
+    goalsTotal: goals,
+    goalsAvg: finishedAll.length ? (goals / finishedAll.length).toFixed(2) : null,
+    topScorer: out.scorers?.[0] || null,
+    topAssist: out.assisters?.[0] || null,
+    bestAttack: bestAtt ? { name: bestAtt.name, flag: bestAtt.flag, value: bestAtt.gf } : null,
+    bestDefense: bestDef ? { name: bestDef.name, flag: bestDef.flag, value: bestDef.gc } : null,
+    mostWins: (mostW && mostW.g > 0) ? { name: mostW.name, flag: mostW.flag, value: mostW.g } : null,
+    biggestWin: biggest?.label || null,
+    highestScoring: highest?.label || null,
   };
 }
 

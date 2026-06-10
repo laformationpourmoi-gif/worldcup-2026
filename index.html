@@ -1158,6 +1158,37 @@ footer {
 }
 .data-mode-banner .refresh-btn:hover { opacity: 1; }
 
+/* ── Match-browser round tabs ── */
+.round-tabs { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 14px; }
+.round-tab {
+  font: inherit; font-size: 12px; font-weight: 700; padding: 7px 14px; border-radius: 100px; cursor: pointer;
+  background: var(--surface-2); border: 1px solid var(--border-bright); color: var(--text-secondary);
+  transition: var(--transition); white-space: nowrap;
+}
+.round-tab:hover { color: var(--text-primary); border-color: var(--gold); }
+.round-tab.active { background: var(--gold); color: #1a1205; border-color: var(--gold); }
+.round-tab .rt-count { opacity: .6; font-size: 11px; margin-left: 4px; }
+
+/* ── Stats leaders ── */
+.stats-leaders { display: grid; grid-template-columns: repeat(auto-fit, minmax(230px, 1fr)); gap: 14px; margin-top: 18px; }
+.leader-card {
+  background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-md);
+  padding: 15px 18px; display: flex; align-items: center; gap: 14px; transition: var(--transition);
+}
+.leader-card:hover { border-color: var(--border-bright); transform: translateY(-2px); }
+.leader-card.wide { grid-column: 1 / -1; }
+.leader-icon { font-size: 26px; line-height: 1; }
+.leader-body { min-width: 0; flex: 1; }
+.leader-label { font-size: 11px; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; color: var(--text-muted); margin-bottom: 3px; }
+.leader-main { font-size: 15px; font-weight: 800; color: var(--text-primary); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.leader-sub { font-size: 12px; color: var(--gold); font-weight: 700; }
+.stats-empty {
+  margin-top: 18px; text-align: center; color: var(--text-secondary); font-size: 14px;
+  padding: 24px; border: 1px dashed var(--border-bright); border-radius: var(--radius-md);
+  background: radial-gradient(120% 120% at 50% 0%, rgba(255,193,7,0.05), transparent 60%);
+}
+.stats-empty b { color: var(--text-primary); }
+
 </style>
 </head>
 
@@ -1273,6 +1304,7 @@ footer {
       <h2 class="section-title" data-i18n="ts_title"></h2>
     </div>
     <div class="stats-grid reveal" id="tournament-stats-grid"></div>
+    <div class="stats-leaders reveal" id="stats-leaders"></div>
   </div>
 </section>
 
@@ -1284,6 +1316,7 @@ footer {
       <h2 class="section-title" data-i18n="matches_title"></h2>
       <p class="section-sub" data-i18n="matches_sub"></p>
     </div>
+    <div class="round-tabs reveal" id="round-tabs"></div>
     <div class="match-filters reveal" id="match-filters"></div>
     <div class="matches-list reveal" id="matches-list"></div>
   </div>
@@ -1743,6 +1776,10 @@ const DATA = {
   /* Top assisters — EMPTY until play begins */
   assisters: [],
 
+  /* Full schedule (all matches, by round) + rich stats — filled by the live feed */
+  schedule: [],
+  stats: null,
+
   /* ── Featured teams — REAL top contenders + the three hosts ──
      Group letters from the real draw. pts/gf/ga = 0 and form = [] until play
      begins; the live feed fills them. "favorites" flags the title contenders. */
@@ -1864,12 +1901,14 @@ function setLang(lang) {
   document.getElementById('btn-fr').classList.toggle('active', lang === 'fr');
   document.getElementById('btn-en').classList.toggle('active', lang === 'en');
   // Re-render dynamic content that needs full re-build for lang
+  renderRoundTabs();
   renderMatches(currentFilter);
   renderGroups();
   renderScorers();
   renderNews();
   renderTeams();
   renderTournamentStats();
+  renderStatLeaders();
   renderBanner();
 }
 
@@ -1929,9 +1968,11 @@ function renderTournamentStats() {
     { icon:"🏟️", value:d.stadiums,        fr:"Stades",        en:"Stadiums" },
     { icon:"🌎", value:d.nations_hosting, fr:"Nations hôtes", en:"Host nations" },
   ];
+  const st = DATA.stats || {};
   const liveStats = [
     { icon:"⚽", value:d.goalsTotal,  fr:"Buts",          en:"Goals" },
     { icon:"🎯", value:d.goalsAvg,    fr:"Buts / match",  en:"Goals / match" },
+    { icon:"✅", value:(st.matchesPlayed != null ? st.matchesPlayed : '—'), fr:"Matchs joués", en:"Matches played" },
     { icon:"🏆", value:d.topGoals,    fr:"Record buteur", en:"Top scorer" },
   ];
   const preStats = [
@@ -1949,6 +1990,50 @@ function renderTournamentStats() {
       <div class="stat-label">${currentLang==='fr' ? s.fr : s.en}</div>
     </div>
   `).join('');
+}
+
+/* ────────────────────────────────────────────────────────
+   STATS LEADERS (top scorer, best attack/defense, biggest win…)
+──────────────────────────────────────────────────────── */
+function renderStatLeaders() {
+  const el = document.getElementById('stats-leaders');
+  if (!el) return;
+  const s = DATA.stats;
+  const fr = currentLang === 'fr';
+
+  if (!s || (!s.matchesPlayed && !s.topScorer && !s.bestAttack)) {
+    el.innerHTML = `<div class="stats-empty">${fr
+      ? "📊 Les statistiques détaillées (buts, moyenne, meilleure attaque/défense, plus large victoire, meilleur buteur…) <b>se rempliront automatiquement dès le coup d'envoi</b> le 11 juin."
+      : "📊 Detailed stats (goals, average, best attack/defense, biggest win, top scorer…) <b>fill in automatically from kick-off</b> on 11 June."}</div>`;
+    return;
+  }
+
+  const card = (icon, label, main, sub, wide) => `
+    <div class="leader-card${wide ? ' wide' : ''}">
+      <div class="leader-icon">${icon}</div>
+      <div class="leader-body">
+        <div class="leader-label">${label}</div>
+        <div class="leader-main">${main}</div>
+        ${sub ? `<div class="leader-sub">${sub}</div>` : ''}
+      </div>
+    </div>`;
+
+  const c = [];
+  if (s.topScorer) c.push(card('👟', fr ? 'Meilleur buteur' : 'Top scorer',
+    `${s.topScorer.flag || ''} ${s.topScorer.name}`, `${s.topScorer.goals} ${fr ? 'buts' : 'goals'} · ${s.topScorer.team}`));
+  if (s.topAssist) c.push(card('🅰️', fr ? 'Meilleur passeur' : 'Top assists',
+    `${s.topAssist.flag || ''} ${s.topAssist.name}`, `${s.topAssist.assists} ${fr ? 'passes' : 'assists'} · ${s.topAssist.team}`));
+  if (s.bestAttack) c.push(card('⚔️', fr ? 'Meilleure attaque' : 'Best attack',
+    `${s.bestAttack.flag} ${s.bestAttack.name}`, `${s.bestAttack.value} ${fr ? 'buts marqués' : 'goals scored'}`));
+  if (s.bestDefense) c.push(card('🛡️', fr ? 'Meilleure défense' : 'Best defense',
+    `${s.bestDefense.flag} ${s.bestDefense.name}`, `${s.bestDefense.value} ${fr ? 'buts encaissés' : 'goals conceded'}`));
+  if (s.mostWins) c.push(card('🏅', fr ? 'Plus de victoires' : 'Most wins',
+    `${s.mostWins.flag} ${s.mostWins.name}`, `${s.mostWins.value} ${fr ? 'victoires' : 'wins'}`));
+  if (s.biggestWin) c.push(card('💥', fr ? 'Plus large victoire' : 'Biggest win', s.biggestWin, '', true));
+  if (s.highestScoring && s.highestScoring !== s.biggestWin)
+    c.push(card('🔥', fr ? 'Match le plus prolifique' : 'Highest-scoring match', s.highestScoring, '', true));
+
+  el.innerHTML = c.join('');
 }
 
 /* ────────────────────────────────────────────────────────
@@ -2013,6 +2098,42 @@ function renderGroups() {
    MATCHES
 ──────────────────────────────────────────────────────── */
 let currentFilter = 'all';
+let currentRound = 'all';
+
+const ROUND_LABELS = {
+  all:  { fr:'Tous',       en:'All' },
+  G1:   { fr:'Groupes J1', en:'Groups · MD1' },
+  G2:   { fr:'Groupes J2', en:'Groups · MD2' },
+  G3:   { fr:'Groupes J3', en:'Groups · MD3' },
+  R32:  { fr:'1/16',       en:'R32' },
+  R16:  { fr:'1/8',        en:'R16' },
+  QF:   { fr:'1/4',        en:'QF' },
+  SF:   { fr:'1/2',        en:'SF' },
+  '3P': { fr:'3e place',   en:'3rd place' },
+  F:    { fr:'Finale',     en:'Final' },
+};
+const ROUND_ORDER = ['all','G1','G2','G3','R32','R16','QF','SF','3P','F'];
+
+function renderRoundTabs() {
+  const el = document.getElementById('round-tabs');
+  if (!el) return;
+  const sched = DATA.schedule || [];
+  if (!sched.length) { el.innerHTML = ''; return; }          // no full schedule yet → hide tabs
+  const present = new Set(sched.map(m => m.round));
+  const tabs = ROUND_ORDER.filter(r => r === 'all' || present.has(r));
+  el.innerHTML = tabs.map(r => {
+    const L = ROUND_LABELS[r];
+    const lbl = L ? (currentLang === 'fr' ? L.fr : L.en) : r;
+    const count = r === 'all' ? sched.length : sched.filter(m => m.round === r).length;
+    return `<button class="round-tab ${r === currentRound ? 'active' : ''}" onclick="selectRound('${r}')">${lbl}<span class="rt-count">${count}</span></button>`;
+  }).join('');
+}
+
+function selectRound(r) {
+  currentRound = r;
+  renderRoundTabs();
+  renderMatches(currentFilter);
+}
 
 function renderMatchFilters() {
   const filters = [
@@ -2036,7 +2157,13 @@ function filterMatches(filter) {
 
 function renderMatches(filter) {
   const list = document.getElementById('matches-list');
-  let matches = DATA.matches;
+  const sched = DATA.schedule || [];
+  let matches;
+  if (currentRound !== 'all' && sched.length) {
+    matches = sched.filter(m => m.round === currentRound);                  // a specific round → all its matches
+  } else {
+    matches = (DATA.matches && DATA.matches.length) ? DATA.matches : sched; // overview → curated set
+  }
   if (filter !== 'all') matches = matches.filter(m => m.status === filter);
 
   if (!matches.length) {
@@ -2065,7 +2192,7 @@ function renderMatches(filter) {
           <span class="match-team-flag">${m.home.flag}</span>
           <div>
             <div class="match-team-name">${m.home.name}</div>
-            <div class="match-team-rank">FIFA #${m.home.rank}</div>
+            ${m.home.rank ? `<div class="match-team-rank">FIFA #${m.home.rank}</div>` : ''}
           </div>
         </div>
         <div class="match-center">
@@ -2082,7 +2209,7 @@ function renderMatches(filter) {
           <span class="match-team-flag">${m.away.flag}</span>
           <div style="text-align:right">
             <div class="match-team-name">${m.away.name}</div>
-            <div class="match-team-rank">FIFA #${m.away.rank}</div>
+            ${m.away.rank ? `<div class="match-team-rank">FIFA #${m.away.rank}</div>` : ''}
           </div>
         </div>
       </div>`;
@@ -2314,6 +2441,8 @@ function renderBanner() {
 function rerenderAll() {
   renderHostCities();
   renderTournamentStats();
+  renderStatLeaders();
+  renderRoundTabs();
   renderMatchFilters();
   renderMatches(currentFilter);
   renderGroups();
@@ -2330,7 +2459,7 @@ async function loadLiveData(manual) {
     if (!res.ok) throw new Error('HTTP ' + res.status);
     const snap = await res.json();
     // Merge only the keys the feed provides; missing keys keep the embedded data
-    ['tournament','hostCities','groups','matches','scorers','assisters','watchlist','teams','news'].forEach(k => {
+    ['tournament','hostCities','groups','matches','scorers','assisters','watchlist','teams','news','schedule','stats'].forEach(k => {
       if (snap[k] !== undefined && snap[k] !== null) DATA[k] = snap[k];
     });
     dataStatus = { state: 'live', ts: snap.updatedAt || Date.now() };
@@ -2363,6 +2492,8 @@ function init() {
   // Render dynamic sections
   renderHostCities();
   renderTournamentStats();
+  renderStatLeaders();
+  renderRoundTabs();
   renderMatchFilters();
   renderMatches('all');
   renderGroups();
