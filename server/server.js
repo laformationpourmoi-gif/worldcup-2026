@@ -20,7 +20,7 @@ import cors from 'cors';
 import Anthropic from '@anthropic-ai/sdk';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { buildFreeSnapshot } from './free-feed.js';
+import { buildFreeSnapshot, buildMatchDetail } from './free-feed.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
@@ -209,6 +209,13 @@ app.get('/api/health', (_req, res) => {
     hasFootballDataKey: !!process.env.FOOTBALLDATA_KEY,
     cachedAt: cache.ts || null,
   });
+});
+
+app.get('/api/match', async (req, res) => {
+  const id = String(req.query.id || '').replace(/\D/g, '');
+  if (!id) return res.status(400).json({ error: 'missing match id' });
+  try { res.json(await buildMatchDetail(id)); }
+  catch (e) { res.status(502).json({ error: String(e?.message || e) }); }
 });
 
 app.get('/api/snapshot', async (req, res) => {

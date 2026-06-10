@@ -1189,6 +1189,45 @@ footer {
 }
 .stats-empty b { color: var(--text-primary); }
 
+/* ── Clickable match cards + detail modal ── */
+.match-card.clickable { cursor: pointer; }
+.match-card.clickable:hover { border-color: var(--gold); }
+.match-detail-hint { font-size: 10px; color: var(--text-muted); margin-top: 4px; opacity: .8; }
+
+.match-modal {
+  position: fixed; inset: 0; z-index: 1000; display: none;
+  align-items: center; justify-content: center; padding: 20px;
+  background: rgba(4,8,12,0.78); backdrop-filter: blur(4px);
+}
+.match-modal.open { display: flex; animation: fadeIn .2s ease; }
+@keyframes fadeIn { from { opacity: 0 } to { opacity: 1 } }
+.match-modal-card {
+  width: 100%; max-width: 560px; max-height: 88vh; overflow-y: auto;
+  background: var(--surface); border: 1px solid var(--border-bright);
+  border-radius: var(--radius-lg); padding: 22px 22px 26px;
+  box-shadow: 0 30px 80px rgba(0,0,0,0.6);
+}
+.mm-close { float: right; font-size: 22px; line-height: 1; cursor: pointer; color: var(--text-muted); background: none; border: none; }
+.mm-close:hover { color: var(--text-primary); }
+.mm-head { text-align: center; margin-bottom: 18px; }
+.mm-teams { display: flex; align-items: center; justify-content: center; gap: 16px; margin-bottom: 6px; }
+.mm-team { display: flex; flex-direction: column; align-items: center; gap: 4px; flex: 1; min-width: 0; }
+.mm-team .fl { font-size: 34px; }
+.mm-team .nm { font-size: 13px; font-weight: 700; color: var(--text-primary); }
+.mm-score { font-family: var(--font-display); font-size: 40px; color: var(--text-primary); white-space: nowrap; }
+.mm-score.tbd { font-size: 22px; color: var(--text-muted); }
+.mm-sub { font-size: 12px; color: var(--text-muted); }
+.mm-pens { font-size: 12px; color: var(--gold); font-weight: 700; margin-top: 2px; }
+.mm-section { margin-top: 16px; }
+.mm-section-t { font-size: 11px; font-weight: 800; letter-spacing: .08em; text-transform: uppercase; color: var(--gold); margin-bottom: 8px; }
+.mm-row { display: flex; align-items: center; gap: 10px; padding: 6px 0; border-bottom: 1px solid var(--border); font-size: 13px; color: var(--text-secondary); }
+.mm-row:last-child { border-bottom: none; }
+.mm-min { min-width: 38px; font-weight: 800; color: var(--text-primary); }
+.mm-card-yellow { width: 11px; height: 15px; border-radius: 2px; background: #f5c518; display: inline-block; }
+.mm-card-red { width: 11px; height: 15px; border-radius: 2px; background: #e0392b; display: inline-block; }
+.mm-empty { color: var(--text-muted); font-size: 13px; padding: 6px 0; }
+.mm-loading { text-align: center; color: var(--text-secondary); padding: 30px; }
+
 </style>
 </head>
 
@@ -1383,6 +1422,11 @@ footer {
     <div class="footer-copy" data-i18n="footer_copy"></div>
   </div>
 </footer>
+
+<!-- ═══════════════════════════════════════ MATCH DETAIL MODAL ════ -->
+<div class="match-modal" id="match-modal" onclick="closeMatchDetail(event)">
+  <div class="match-modal-card" id="match-modal-card" onclick="event.stopPropagation()"></div>
+</div>
 
 
 <!-- ═══════════════════════════════════════════════════════════════
@@ -2171,6 +2215,7 @@ function renderMatches(filter) {
     return;
   }
 
+  const clickable = typeof dataStatus !== 'undefined' && dataStatus.state === 'live';
   list.innerHTML = matches.map(m => {
     const isLive = m.status === 'live';
     const isFinished = m.status === 'finished';
@@ -2187,7 +2232,7 @@ function renderMatches(filter) {
       : `<div class="match-score tbd">VS</div>`;
 
     return `
-      <div class="match-card ${isLive ? 'live' : ''}">
+      <div class="match-card ${isLive ? 'live' : ''}${clickable ? ' clickable' : ''}"${clickable ? ` onclick="openMatchDetail('${m.id}')"` : ''}>
         <div class="match-team home">
           <span class="match-team-flag">${m.home.flag}</span>
           <div>
@@ -2203,6 +2248,7 @@ function renderMatches(filter) {
             <div class="match-group-label">${t('match_group')} ${m.group}</div>
             <div class="match-time">${m.time} · ${m.date}</div>
             ${m.venue ? `<div class="match-venue">${m.venue}</div>` : ''}
+            ${clickable ? `<div class="match-detail-hint">${currentLang === 'fr' ? '🔎 Détail du match' : '🔎 Match details'}</div>` : ''}
           </div>
         </div>
         <div class="match-team away">
@@ -2215,6 +2261,69 @@ function renderMatches(filter) {
       </div>`;
   }).join('');
 }
+
+/* ────────────────────────────────────────────────────────
+   MATCH DETAIL MODAL (on-demand · free football-data events)
+──────────────────────────────────────────────────────── */
+const MATCH_URL = (window.WC26_API_BASE || '') + '/api/match';
+
+async function openMatchDetail(id) {
+  const modal = document.getElementById('match-modal');
+  const card = document.getElementById('match-modal-card');
+  const fr = currentLang === 'fr';
+  modal.classList.add('open');
+  card.innerHTML = `<button class="mm-close" onclick="closeMatchDetail()">×</button><div class="mm-loading">${fr ? 'Chargement du détail…' : 'Loading match details…'}</div>`;
+  try {
+    const res = await fetch(`${MATCH_URL}?id=${encodeURIComponent(id)}`, { cache: 'no-store' });
+    if (!res.ok) throw new Error('HTTP ' + res.status);
+    renderMatchDetail(await res.json());
+  } catch (e) {
+    card.innerHTML = `<button class="mm-close" onclick="closeMatchDetail()">×</button><div class="mm-loading">${fr ? 'Détail indisponible pour ce match.' : 'Match details unavailable.'}</div>`;
+  }
+}
+
+function closeMatchDetail() {
+  const m = document.getElementById('match-modal');
+  if (m) m.classList.remove('open');
+}
+
+function renderMatchDetail(d) {
+  const fr = currentLang === 'fr';
+  const card = document.getElementById('match-modal-card');
+  const ft = d.score?.ft || {}, ht = d.score?.ht || {}, pens = d.score?.pens;
+  const hasScore = ft.home != null && ft.away != null;
+  const sub = [d.group ? (fr ? 'Groupe ' : 'Group ') + d.group : (d.stage || ''), d.date, d.venue].filter(Boolean).join(' · ');
+
+  const goalRows = (d.goals || []).length
+    ? d.goals.map(g => `<div class="mm-row"><span class="mm-min">${g.minute || ''}'</span>⚽ ${g.scorer || '?'}${g.assist ? ` <span style="color:var(--text-muted)">(${fr ? 'passe' : 'assist'}: ${g.assist})</span>` : ''}<span style="margin-left:auto;color:var(--text-muted)">${g.team || ''}</span></div>`).join('')
+    : `<div class="mm-empty">${d.status === 'upcoming' ? (fr ? 'Match pas encore joué.' : 'Match not played yet.') : (fr ? 'Aucun but.' : 'No goals.')}</div>`;
+
+  const cardRows = (d.bookings || []).length
+    ? d.bookings.map(b => `<div class="mm-row"><span class="mm-min">${b.minute || ''}'</span><span class="mm-card-${b.card === 'RED' ? 'red' : 'yellow'}"></span> ${b.player || '?'}<span style="margin-left:auto;color:var(--text-muted)">${b.team || ''}</span></div>`).join('')
+    : `<div class="mm-empty">${fr ? 'Aucun carton.' : 'No cards.'}</div>`;
+
+  const ref = (d.referees || [])[0] || null;
+
+  card.innerHTML = `
+    <button class="mm-close" onclick="closeMatchDetail()">×</button>
+    <div class="mm-head">
+      <div class="mm-teams">
+        <div class="mm-team"><span class="fl">${d.home.flag}</span><span class="nm">${d.home.name}</span></div>
+        <div class="mm-score${hasScore ? '' : ' tbd'}">${hasScore ? `${ft.home} – ${ft.away}` : 'VS'}</div>
+        <div class="mm-team"><span class="fl">${d.away.flag}</span><span class="nm">${d.away.name}</span></div>
+      </div>
+      ${hasScore && ht.home != null ? `<div class="mm-sub">${fr ? 'Mi-temps' : 'Half-time'} ${ht.home} – ${ht.away}</div>` : ''}
+      ${pens ? `<div class="mm-pens">${fr ? 'Tirs au but' : 'Penalties'} ${pens.home} – ${pens.away}</div>` : ''}
+      <div class="mm-sub">${sub}</div>
+    </div>
+    <div class="mm-section"><div class="mm-section-t">⚽ ${fr ? 'Buts' : 'Goals'}</div>${goalRows}</div>
+    <div class="mm-section"><div class="mm-section-t">🟨 ${fr ? 'Cartons' : 'Cards'}</div>${cardRows}</div>
+    ${ref ? `<div class="mm-section"><div class="mm-section-t">👤 ${fr ? 'Arbitre' : 'Referee'}</div><div class="mm-row">${ref}</div></div>` : ''}
+    <div class="mm-sub" style="margin-top:14px;text-align:center">${fr ? 'Possession, tirs et xG ne sont pas fournis par la source gratuite.' : 'Possession, shots and xG are not provided by the free source.'}</div>
+  `;
+}
+
+document.addEventListener('keydown', e => { if (e.key === 'Escape') closeMatchDetail(); });
 
 /* ────────────────────────────────────────────────────────
    SCORERS & ASSISTS

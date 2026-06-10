@@ -294,3 +294,39 @@ export async function buildFreeSnapshot() {
   out.updatedAt = Date.now();
   return out;
 }
+
+/* ── On-demand single-match detail (events) — FREE, uses the same key ──────
+   Returns goals (scorer + minute), bookings (cards), referee and the score by
+   period for ONE match. Called when the user clicks a match. */
+export async function buildMatchDetail(id) {
+  if (!FD_KEY) throw new Error('FOOTBALLDATA_KEY required for match detail');
+  const m = await fd(`/matches/${id}`);
+  const sc = m.score || {};
+  return {
+    id: m.id,
+    status: matchStatus(m.status),
+    date: m.utcDate ? etDate(m.utcDate) : '',
+    time: m.utcDate ? etTime(m.utcDate) : '',
+    venue: m.venue || '',
+    stage: m.stage || null,
+    group: m.group || null,
+    home: { name: m.homeTeam?.name || 'TBD', flag: flagOf(m.homeTeam?.name) },
+    away: { name: m.awayTeam?.name || 'TBD', flag: flagOf(m.awayTeam?.name) },
+    score: {
+      winner: sc.winner || null,
+      duration: sc.duration || 'REGULAR',
+      ft: sc.fullTime || {},
+      ht: sc.halfTime || {},
+      et: sc.extraTime || null,
+      pens: sc.penalties || null,
+    },
+    goals: (m.goals || []).map(g => ({
+      minute: g.minute, injuryTime: g.injuryTime || null, type: g.type || 'REGULAR',
+      team: g.team?.name, scorer: g.scorer?.name, assist: g.assist?.name || null,
+    })),
+    bookings: (m.bookings || []).map(b => ({
+      minute: b.minute, team: b.team?.name, player: b.player?.name, card: b.card,
+    })),
+    referees: (m.referees || []).filter(r => !r.type || r.type === 'REFEREE').map(r => r.name).filter(Boolean),
+  };
+}
