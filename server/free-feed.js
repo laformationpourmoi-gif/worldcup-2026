@@ -53,8 +53,25 @@ const CONTENDERS = ['Spain','Argentina','France','England','Brazil','Portugal','
 const HOSTS = ['Mexico','United States','Canada'];
 const FAVORITES = new Set(['spain','argentina','france','england','brazil']);
 
-const norm = s => (s || '').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '')
+export const norm = s => (s || '').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '')
   .replace(/[^a-z ]/g, '').replace(/\s+/g, ' ').trim();
+
+/* Canonical country key — absorbs naming differences between data providers
+   (football-data vs balldontlie vs FIFA): "Korea Republic"/"South Korea",
+   "Türkiye"/"Turkey", "Cape Verde Islands"/"Cabo Verde", etc. */
+const ALIASES = {
+  'korea republic': 'south korea', 'republic of korea': 'south korea',
+  'usa': 'united states', 'united states of america': 'united states',
+  'turkiye': 'turkey',
+  'cote divoire': 'ivory coast', 'cote d ivoire': 'ivory coast',
+  'cabo verde': 'cape verde', 'cape verde islands': 'cape verde',
+  'bosniaherzegovina': 'bosnia and herzegovina', 'bosnia herzegovina': 'bosnia and herzegovina', 'bosnia': 'bosnia and herzegovina',
+  'ir iran': 'iran', 'iran islamic republic of': 'iran',
+  'czech republic': 'czechia',
+  'congo dr': 'dr congo', 'democratic republic of the congo': 'dr congo', 'congo kinshasa': 'dr congo',
+  'netherlands holland': 'netherlands', 'holland': 'netherlands',
+};
+export const canon = s => { const n = norm(s); return ALIASES[n] || n; };
 const flagOf = name => FLAGS[norm(name)] || '🏳️';
 const rankOf = name => RANK[norm(name)] || 0;
 
@@ -305,6 +322,7 @@ export async function buildMatchDetail(id) {
   return {
     id: m.id,
     status: matchStatus(m.status),
+    utc: m.utcDate || null,
     date: m.utcDate ? etDate(m.utcDate) : '',
     time: m.utcDate ? etTime(m.utcDate) : '',
     venue: m.venue || '',

@@ -3,6 +3,7 @@
    → goals (scorer + minute), bookings (cards), referee, score by period.
    Uses the same free football-data key (FootDataKey / FOOTBALLDATA_KEY). */
 import { buildMatchDetail } from '../server/free-feed.js';
+import { buildMatchExtras } from '../server/extras-feed.js';
 
 const cache = new Map();              // per-match warm cache
 const TTL = 10 * 60 * 1000;
@@ -18,6 +19,7 @@ export default async function handler(req, res) {
 
   try {
     const data = await buildMatchDetail(id);
+    data.extras = await buildMatchExtras(data);       // null unless BALLDONTLIE_KEY is set
     cache.set(id, { data, ts: Date.now() });
     res.status(200).json(data);
   } catch (e) {

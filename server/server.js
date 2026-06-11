@@ -21,6 +21,7 @@ import Anthropic from '@anthropic-ai/sdk';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { buildFreeSnapshot, buildMatchDetail } from './free-feed.js';
+import { buildMatchExtras } from './extras-feed.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
@@ -214,8 +215,11 @@ app.get('/api/health', (_req, res) => {
 app.get('/api/match', async (req, res) => {
   const id = String(req.query.id || '').replace(/\D/g, '');
   if (!id) return res.status(400).json({ error: 'missing match id' });
-  try { res.json(await buildMatchDetail(id)); }
-  catch (e) { res.status(502).json({ error: String(e?.message || e) }); }
+  try {
+    const detail = await buildMatchDetail(id);
+    detail.extras = await buildMatchExtras(detail);   // null unless BALLDONTLIE_KEY is set
+    res.json(detail);
+  } catch (e) { res.status(502).json({ error: String(e?.message || e) }); }
 });
 
 app.get('/api/snapshot', async (req, res) => {

@@ -72,6 +72,17 @@ Get the free key: <https://www.football-data.org/client/register> (World Cup com
 **Free news sources** (no key, balanced FR/EN, World-Cup-filtered): BBC Sport (EN), L'Équipe (FR),
 Radio-Canada Sports (FR-CA). The feed interleaves languages so neither side dominates.
 
+### Match detail panel (click any match)
+
+With the free football-data key, clicking a match opens a panel with **goals (scorer + minute),
+cards, referee and the score by period** — via `GET /api/match?id=<id>`. All free.
+
+**Optional premium extras — possession / shots / xG.** Set `BALLDONTLIE_KEY`
+(BALLDONTLIE FIFA API, GOAT tier — 48 h free trial at <https://app.balldontlie.io>) and the same
+panel automatically adds possession (with bar), xG, shots / on target, big chances, corners,
+fouls, yellow cards, saves and accurate passes. No key → the panel simply stays in free mode.
+Matching between the two providers is done by canonical team names + date (their match IDs differ).
+
 ### Optional: AI feed (`FEED=ai`)
 
 Set `FEED=ai` and `ANTHROPIC_API_KEY` in `.env` to use Claude + web search instead — richer,

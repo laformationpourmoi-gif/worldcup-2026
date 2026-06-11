@@ -1228,6 +1228,17 @@ footer {
 .mm-empty { color: var(--text-muted); font-size: 13px; padding: 6px 0; }
 .mm-loading { text-align: center; color: var(--text-secondary); padding: 30px; }
 
+/* Comparison stats (possession / shots / xG) */
+.mm-stat-row { display: grid; grid-template-columns: 1fr auto 1fr; align-items: center; gap: 12px; padding: 5px 0; font-size: 13px; }
+.mm-stat-row .v { font-weight: 800; color: var(--text-primary); min-width: 34px; }
+.mm-stat-row .v.home { text-align: right; }
+.mm-stat-row .v.away { text-align: left; }
+.mm-stat-row .v.lead { color: var(--gold); }
+.mm-stat-row .lbl { font-size: 11px; font-weight: 700; letter-spacing: .05em; text-transform: uppercase; color: var(--text-muted); text-align: center; }
+.mm-poss-bar { display: flex; height: 8px; border-radius: 100px; overflow: hidden; margin: 4px 0 10px; background: var(--surface-2); }
+.mm-poss-bar .ph { background: var(--field-light, #21c97a); }
+.mm-poss-bar .pa { background: var(--electric, #00b4ff); }
+
 </style>
 </head>
 
@@ -2304,6 +2315,41 @@ function renderMatchDetail(d) {
 
   const ref = (d.referees || [])[0] || null;
 
+  /* Optional extras (possession / shots / xG) — present only when the
+     BALLDONTLIE feed is configured server-side */
+  let statsHtml = '';
+  const x = d.extras;
+  if (x) {
+    const row = (label, p, fmt) => {
+      if (!p || (p.home == null && p.away == null)) return '';
+      const f = fmt || (v => v);
+      const hLead = p.home != null && p.away != null && p.home > p.away;
+      const aLead = p.home != null && p.away != null && p.away > p.home;
+      return `<div class="mm-stat-row">
+        <span class="v home${hLead ? ' lead' : ''}">${p.home != null ? f(p.home) : '—'}</span>
+        <span class="lbl">${label}</span>
+        <span class="v away${aLead ? ' lead' : ''}">${p.away != null ? f(p.away) : '—'}</span>
+      </div>`;
+    };
+    const poss = x.possession;
+    const possBar = (poss && poss.home != null && poss.away != null)
+      ? `<div class="mm-poss-bar"><span class="ph" style="width:${poss.home}%"></span><span class="pa" style="width:${poss.away}%"></span></div>` : '';
+    const rows = [
+      row(fr ? 'Possession' : 'Possession', poss, v => v + '%'),
+      possBar,
+      row('xG', x.xg, v => Number(v).toFixed(2)),
+      row(fr ? 'Tirs' : 'Shots', x.shots),
+      row(fr ? 'Tirs cadrés' : 'On target', x.shotsOnTarget),
+      row(fr ? 'Grosses occasions' : 'Big chances', x.bigChances),
+      row(fr ? 'Corners' : 'Corners', x.corners),
+      row(fr ? 'Fautes' : 'Fouls', x.fouls),
+      row(fr ? 'Cartons jaunes' : 'Yellow cards', x.yellowCards),
+      row(fr ? 'Arrêts' : 'Saves', x.saves),
+      row(fr ? 'Passes réussies' : 'Accurate passes', x.passesAccurate),
+    ].join('');
+    if (rows.trim()) statsHtml = `<div class="mm-section"><div class="mm-section-t">📊 ${fr ? 'Statistiques' : 'Statistics'}</div>${rows}</div>`;
+  }
+
   card.innerHTML = `
     <button class="mm-close" onclick="closeMatchDetail()">×</button>
     <div class="mm-head">
@@ -2316,10 +2362,11 @@ function renderMatchDetail(d) {
       ${pens ? `<div class="mm-pens">${fr ? 'Tirs au but' : 'Penalties'} ${pens.home} – ${pens.away}</div>` : ''}
       <div class="mm-sub">${sub}</div>
     </div>
+    ${statsHtml}
     <div class="mm-section"><div class="mm-section-t">⚽ ${fr ? 'Buts' : 'Goals'}</div>${goalRows}</div>
     <div class="mm-section"><div class="mm-section-t">🟨 ${fr ? 'Cartons' : 'Cards'}</div>${cardRows}</div>
     ${ref ? `<div class="mm-section"><div class="mm-section-t">👤 ${fr ? 'Arbitre' : 'Referee'}</div><div class="mm-row">${ref}</div></div>` : ''}
-    <div class="mm-sub" style="margin-top:14px;text-align:center">${fr ? 'Possession, tirs et xG ne sont pas fournis par la source gratuite.' : 'Possession, shots and xG are not provided by the free source.'}</div>
+    ${statsHtml ? '' : `<div class="mm-sub" style="margin-top:14px;text-align:center">${fr ? 'Possession, tirs et xG : disponibles en branchant une source premium (voir README).' : 'Possession, shots and xG: available by plugging a premium source (see README).'}</div>`}
   `;
 }
 
