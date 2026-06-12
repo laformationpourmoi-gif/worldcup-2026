@@ -87,6 +87,8 @@ const etTime = iso => new Intl.DateTimeFormat('en-GB',
   { timeZone: 'America/New_York', hour: '2-digit', minute: '2-digit', hour12: false }).format(new Date(iso)) + ' ET';
 const etDate = iso => new Intl.DateTimeFormat('en-CA',
   { timeZone: 'America/New_York', year: 'numeric', month: '2-digit', day: '2-digit' }).format(new Date(iso));
+const maTime = iso => new Intl.DateTimeFormat('en-GB',
+  { timeZone: 'Africa/Casablanca', hour: '2-digit', minute: '2-digit', hour12: false }).format(new Date(iso));
 
 const GROUP_OF = g => {
   const s = String(g || '');
@@ -137,7 +139,7 @@ async function buildStats(out) {
       away: { name: m.awayTeam?.name || 'TBD', flag: flagOf(m.awayTeam?.name), rank: rankOf(m.awayTeam?.name) },
       score: hasScore ? { home: ft.home, away: ft.away } : null,
       group: grp, round: roundCode(m), stage: m.stage, matchday: m.matchday || null,
-      date: etDate(m.utcDate), time: etTime(m.utcDate), venue: m.venue || '',
+      date: etDate(m.utcDate), time: etTime(m.utcDate), timeMa: maTime(m.utcDate), venue: m.venue || '',
       _utc: m.utcDate,
     };
   });
@@ -221,14 +223,17 @@ async function buildStats(out) {
 /* ── News from free public RSS feeds (NO key) ───────────────────────────── */
 //  `general: true` = non-football feed → keep only soccer items (SOCCER_RE).
 const FEEDS = [
-  { url: 'https://feeds.bbci.co.uk/sport/football/rss.xml',  lang: 'en', source: 'BBC Sport' },
-  { url: 'https://www.lequipe.fr/rss/actu_rss_Football.xml', lang: 'fr', source: "L'Équipe" },
-  { url: 'https://ici.radio-canada.ca/rss/4159',             lang: 'fr', source: 'Radio-Canada Sports', general: true },
+  { url: 'https://feeds.bbci.co.uk/sport/football/rss.xml',     lang: 'en', source: 'BBC Sport' },
+  { url: 'https://www.lequipe.fr/rss/actu_rss_Football.xml',    lang: 'fr', source: "L'Équipe" },
+  { url: 'https://ici.radio-canada.ca/rss/4159',                lang: 'fr', source: 'Radio-Canada Sports', general: true },
+  // Arabic sources (kooora.com exposes no RSS feed — these are the reliable equivalents)
+  { url: 'https://www.skynewsarabia.com/web/rss/sport.xml',     lang: 'ar', source: 'سكاي نيوز عربية', general: true },
+  { url: 'https://feeds.bbci.co.uk/arabic/sports/rss.xml',      lang: 'ar', source: 'BBC عربي', general: true },
 ];
 // Case-sensitive on "Mondial": the tournament noun is capitalised ("Mondial : …",
 // "Mondial de la FIFA"), whereas the adjective is lowercase ("rang mondial" = tennis).
-const WC_RE     = /[Ww]orld\s?[Cc]up|[Cc]oupe du [Mm]onde|\bMondial\b/;
-const SOCCER_RE = /soccer|football|coupe du monde|world\s?cup|\bfoot\b/i;  // no bare "mondial" (too loose in FR)
+const WC_RE     = /[Ww]orld\s?[Cc]up|[Cc]oupe du [Mm]onde|\bMondial\b|كأس العالم|المونديال|مونديال/;
+const SOCCER_RE = /soccer|football|coupe du monde|world\s?cup|\bfoot\b|كرة القدم|كأس العالم|مونديال|المنتخب/i;  // no bare "mondial" (too loose in FR)
 const COLORS = ['#0b3d2e', '#00285c', '#1b6b3a', '#2a0e3a', '#7a3b00', '#0a1a4a'];
 
 function clean(s = '') {
@@ -265,26 +270,28 @@ async function buildNews() {
 
   // Prefer World-Cup-specific items; fall back to latest soccer news pre-tournament.
   const wc = items.filter(it => WC_RE.test(it.title));
-  const pool = wc.length >= 4 ? wc : items;
+  let pool = wc.length >= 4 ? wc : items;
+  const seenTitles = new Set();
+  pool = pool.filter(it => { const k = it.title.toLowerCase(); if (seenTitles.has(k)) return false; seenTitles.add(k); return true; });
 
-  // Balance languages: interleave FR/EN so neither side dominates the feed.
-  const byLang = { fr: [], en: [] };
-  pool.sort((a, b) => b.ts - a.ts).forEach(it => byLang[it.lang === 'fr' ? 'fr' : 'en'].push(it));
+  // Balance languages: round-robin FR/EN/AR so no language dominates the feed.
+  const byLang = { fr: [], en: [], ar: [] };
+  pool.sort((a, b) => b.ts - a.ts).forEach(it => (byLang[it.lang] || byLang.en).push(it));
   const picked = [];
-  let fi = 0, ei = 0;
-  while (picked.length < 6 && (fi < byLang.fr.length || ei < byLang.en.length)) {
-    if (fi < byLang.fr.length) picked.push(byLang.fr[fi++]);
-    if (picked.length < 6 && ei < byLang.en.length) picked.push(byLang.en[ei++]);
+  const idx = { fr: 0, en: 0, ar: 0 };
+  while (picked.length < 6 && (idx.fr < byLang.fr.length || idx.en < byLang.en.length || idx.ar < byLang.ar.length)) {
+    for (const l of ['fr', 'en', 'ar']) {
+      if (picked.length < 6 && idx[l] < byLang[l].length) picked.push(byLang[l][idx[l]++]);
+    }
   }
   if (!picked.length) return null;
 
   return picked.map((it, i) => {
     const human = it.ts ? new Date(it.ts).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }) : it.date;
-    const fr = it.lang === 'fr';
     return {
-      id: i + 1, featured: i === 0, source: it.source, date: human,
-      title_fr: fr ? it.title : it.title, title_en: it.title,   // single-language feed → mirror text
-      excerpt_fr: '', excerpt_en: '',
+      id: i + 1, featured: i === 0, source: it.source, date: human, lang: it.lang,
+      title_fr: it.title, title_en: it.title, title_ar: it.title,   // single-language feed → mirror text
+      excerpt_fr: '', excerpt_en: '', excerpt_ar: '',
       emoji: '⚽', color: COLORS[i % COLORS.length], url: it.link || '#',
     };
   });
@@ -325,6 +332,7 @@ export async function buildMatchDetail(id) {
     utc: m.utcDate || null,
     date: m.utcDate ? etDate(m.utcDate) : '',
     time: m.utcDate ? etTime(m.utcDate) : '',
+    timeMa: m.utcDate ? maTime(m.utcDate) : '',
     venue: m.venue || '',
     stage: m.stage || null,
     group: m.group || null,

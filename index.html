@@ -6,7 +6,7 @@
 <title>FIFA World Cup 2026 — Stats &amp; Live</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Anton&family=Archivo+Black&family=Sora:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Anton&family=Archivo+Black&family=Sora:wght@300;400;500;600;700&family=Tajawal:wght@400;500;700;800&display=swap" rel="stylesheet">
 
 <style>
 /* ═══════════════════════════════════════════════════
@@ -1239,6 +1239,20 @@ footer {
 .mm-poss-bar .ph { background: var(--field-light, #21c97a); }
 .mm-poss-bar .pa { background: var(--electric, #00b4ff); }
 
+/* ── Arabic (RTL) ── */
+html[lang="ar"] body,
+html[lang="ar"] button,
+html[lang="ar"] input { font-family: 'Tajawal', 'Sora', sans-serif; }
+html[lang="ar"] .hero-title,
+html[lang="ar"] .section-title,
+html[lang="ar"] .mm-score,
+html[lang="ar"] .stat-value,
+html[lang="ar"] .scorers-empty-title { font-family: 'Tajawal', 'Anton', sans-serif; font-weight: 800; }
+html[dir="rtl"] .match-team.away > div { text-align: left !important; }
+html[dir="rtl"] .match-team.home > div { text-align: right; }
+html[dir="rtl"] .host-chip { direction: ltr; }
+html[dir="rtl"] .match-time, html[dir="rtl"] .mm-sub, html[dir="rtl"] .news-date { direction: ltr; unicode-bidi: embed; }
+
 </style>
 </head>
 
@@ -1276,6 +1290,7 @@ footer {
         <div class="lang-toggle" id="lang-toggle" role="group" aria-label="Language / Langue">
           <button class="lang-btn" id="btn-fr" onclick="setLang('fr')" aria-label="Français">FR</button>
           <button class="lang-btn" id="btn-en" onclick="setLang('en')" aria-label="English">EN</button>
+          <button class="lang-btn" id="btn-ar" onclick="setLang('ar')" aria-label="العربية">ع</button>
         </div>
         <button class="nav-hamburger" id="hamburger" aria-label="Menu">
           <span></span><span></span><span></span>
@@ -1471,7 +1486,7 @@ const i18n = {
     cd_hours:         "Heures",
     cd_mins:          "Min",
     cd_secs:          "Sec",
-    countdown_kickoff:"Coup d'envoi · Mexico City · 19h ET",
+    countdown_kickoff:"Coup d'envoi · Mexico City · 15h ET · 20h Maroc 🇲🇦",
 
     ts_label:  "Tournoi",
     ts_title:  "Le tournoi en chiffres",
@@ -1560,7 +1575,7 @@ const i18n = {
     cd_hours:         "Hours",
     cd_mins:          "Min",
     cd_secs:          "Sec",
-    countdown_kickoff:"Kick-off · Mexico City · 7pm ET",
+    countdown_kickoff:"Kick-off · Mexico City · 3pm ET · 8pm Morocco 🇲🇦",
 
     ts_label:  "Tournament",
     ts_title:  "Tournament at a Glance",
@@ -1626,8 +1641,103 @@ const i18n = {
     team_pts_label: "Pts",
     team_gf_label:  "GF",
     team_ga_label:  "GA",
+  },
+  ar: {
+    demo_banner:   "وضع تجريبي — بيانات توضيحية فقط.",
+    nav_stats:     "الإحصائيات",
+    nav_groups:    "المجموعات",
+    nav_matches:   "المباريات",
+    nav_scorers:   "الهدافون",
+    nav_teams:     "المنتخبات",
+    nav_news:      "الأخبار",
+
+    hero_eyebrow:  "🏆 رسمي · 11 يونيو – 19 يوليو 2026",
+    hero_line1:    "FIFA",
+    hero_line2:    "كأس العالم",
+    hero_line3:    "2026",
+    hero_desc:     "48 منتخباً. 104 مباريات. 3 دول مضيفة. كأس واحدة. تابع كل إحصائية وكل هدف وكل لحظة — مباشرة.",
+    hero_cta1:     "عرض المباريات",
+    hero_cta2:     "ترتيب المجموعات",
+
+    countdown_label:  "العد التنازلي",
+    cd_days:          "أيام",
+    cd_hours:         "ساعات",
+    cd_mins:          "دقائق",
+    cd_secs:          "ثوانٍ",
+    countdown_kickoff:"ضربة البداية · مكسيكو · 15:00 ET · 20:00 بتوقيت المغرب 🇲🇦",
+
+    ts_label:  "البطولة",
+    ts_title:  "البطولة في أرقام",
+
+    matches_label: "الجدول",
+    matches_title: "المباريات والنتائج",
+    matches_sub:   "المباريات الجارية والقادمة والمنتهية. التوقيت بتوقيت شرق أمريكا وبتوقيت المغرب 🇲🇦.",
+    filter_all:    "الكل",
+    filter_live:   "مباشر",
+    filter_today:  "اليوم",
+    filter_upcoming:"قادمة",
+    filter_finished:"منتهية",
+
+    groups_label:  "دور المجموعات",
+    groups_title:  "ترتيب المجموعات",
+    groups_sub:    "12 مجموعة من 4 منتخبات. يتأهل الأول والثاني إلى دور الـ32.",
+    qual_round16:  "متأهل إلى دور الـ32",
+    qual_playoff:  "ملحق التأهل",
+
+    scorers_label: "إحصائيات فردية",
+    scorers_title: "سباق الحذاء الذهبي",
+    scorers_sub:   "أفضل الهدافين وصانعي الأهداف في البطولة.",
+    panel_scorers: "⚽ ترتيب الهدافين",
+    panel_assists: "🎯 صانعو الأهداف",
+    goals_unit:    "أهداف",
+    assists_unit:  "تمريرات حاسمة",
+
+    teams_label:   "منتخبات بارزة",
+    teams_title:   "المرشحون للقب",
+    teams_sub:     "الأداء وآخر النتائج وتصنيف الفيفا لأبرز المنتخبات.",
+
+    news_label:    "الأخبار",
+    news_title:    "آخر أخبار كأس العالم",
+    news_sub:      "مقالات مختارة من سكاي نيوز عربية وBBC وL'Équipe والمزيد.",
+    read_more:     "اقرأ المقال ←",
+
+    footer_tagline: "إحصائيات · نتائج · أخبار · FR/EN/ع",
+    footer_api_note: "<strong>⚙️ للمطوّرين:</strong> البيانات الحية عبر <code>/api/snapshot</code> مع تخزين مؤقت. المفاتيح في متغيّرات البيئة، وليست في الشيفرة أبداً.",
+    footer_copy: "© 2026 WorldCup26.app — بيانات رسمية مجمّعة. غير تابع للفيفا.",
+
+    group_status_upcoming: "لم تبدأ بعد",
+    group_status_ongoing:  "جارية",
+    group_status_finished: "انتهت",
+
+    col_pj: "ل",
+    col_g:  "ف",
+    col_n:  "ت",
+    col_p:  "خ",
+    col_bf: "له",
+    col_bc: "عليه",
+    col_pts:"نقاط",
+    col_forme: "النتائج",
+
+    match_group: "المجموعة",
+    match_ko:    "الأدوار الإقصائية",
+    match_live_min: "د",
+    match_finished: "انتهت",
+    match_upcoming: "قادمة",
+    match_vs:    "–",
+
+    team_rank_label: "فيفا #",
+    team_group_label: "المجموعة",
+    team_pts_label: "نقاط",
+    team_gf_label:  "له",
+    team_ga_label:  "عليه",
   }
 };
+
+/* Pick a localized string: tr('texte fr', 'english text', 'نص عربي') */
+function tr(fr, en, ar) {
+  return currentLang === 'ar' ? (ar !== undefined ? ar : en)
+       : currentLang === 'fr' ? fr : en;
+}
 
 /* ────────────────────────────────────────────────────────
    DATA MODULE — Replace this with real API calls
@@ -1953,8 +2063,10 @@ function setLang(lang) {
     if (key === 'footer_api_note') { el.innerHTML = val; }
     else { el.textContent = val; }
   });
+  document.documentElement.dir = lang === 'ar' ? 'rtl' : 'ltr';
   document.getElementById('btn-fr').classList.toggle('active', lang === 'fr');
   document.getElementById('btn-en').classList.toggle('active', lang === 'en');
+  document.getElementById('btn-ar').classList.toggle('active', lang === 'ar');
   // Re-render dynamic content that needs full re-build for lang
   renderRoundTabs();
   renderMatches(currentFilter);
@@ -1971,7 +2083,7 @@ function setLang(lang) {
    COUNTDOWN
 ──────────────────────────────────────────────────────── */
 function updateCountdown() {
-  const target = new Date('2026-06-11T19:00:00-06:00'); // Mexico City ET
+  const target = new Date('2026-06-11T15:00:00-04:00'); // Mexico–South Africa · 15:00 ET · 20:00 Morocco
   const now = new Date();
   const diff = target - now;
 
@@ -2016,24 +2128,24 @@ function renderTournamentStats() {
   const daysToGo = Math.max(0, Math.ceil((new Date('2026-06-11T15:00:00-05:00') - new Date()) / 86400000));
 
   const base = [
-    { icon:"🌍", value:d.teams,           fr:"Équipes",       en:"Teams" },
-    { icon:"🏟️", value:d.matches,         fr:"Matchs",        en:"Matches" },
-    { icon:"🅰️", value:d.groups,          fr:"Groupes",       en:"Groups" },
-    { icon:"📍", value:d.cities,          fr:"Villes hôtes",  en:"Host cities" },
-    { icon:"🏟️", value:d.stadiums,        fr:"Stades",        en:"Stadiums" },
-    { icon:"🌎", value:d.nations_hosting, fr:"Nations hôtes", en:"Host nations" },
+    { icon:"🌍", value:d.teams,           fr:"Équipes",       en:"Teams",        ar:"منتخبات" },
+    { icon:"🏟️", value:d.matches,         fr:"Matchs",        en:"Matches",      ar:"مباريات" },
+    { icon:"🅰️", value:d.groups,          fr:"Groupes",       en:"Groups",       ar:"مجموعات" },
+    { icon:"📍", value:d.cities,          fr:"Villes hôtes",  en:"Host cities",  ar:"مدن مضيفة" },
+    { icon:"🏟️", value:d.stadiums,        fr:"Stades",        en:"Stadiums",     ar:"ملاعب" },
+    { icon:"🌎", value:d.nations_hosting, fr:"Nations hôtes", en:"Host nations", ar:"دول مضيفة" },
   ];
   const st = DATA.stats || {};
   const liveStats = [
-    { icon:"⚽", value:d.goalsTotal,  fr:"Buts",          en:"Goals" },
-    { icon:"🎯", value:d.goalsAvg,    fr:"Buts / match",  en:"Goals / match" },
-    { icon:"✅", value:(st.matchesPlayed != null ? st.matchesPlayed : '—'), fr:"Matchs joués", en:"Matches played" },
-    { icon:"🏆", value:d.topGoals,    fr:"Record buteur", en:"Top scorer" },
+    { icon:"⚽", value:d.goalsTotal,  fr:"Buts",          en:"Goals",          ar:"أهداف" },
+    { icon:"🎯", value:d.goalsAvg,    fr:"Buts / match",  en:"Goals / match",  ar:"أهداف / مباراة" },
+    { icon:"✅", value:(st.matchesPlayed != null ? st.matchesPlayed : '—'), fr:"Matchs joués", en:"Matches played", ar:"مباريات لُعبت" },
+    { icon:"🏆", value:d.topGoals,    fr:"Record buteur", en:"Top scorer",     ar:"رقم الهداف" },
   ];
   const preStats = [
-    { icon:"📅", value:d.duration_days, fr:"Jours de tournoi", en:"Days of action" },
-    { icon:"👟", value:d.players,       fr:"Joueurs",          en:"Players" },
-    { icon:"⏳", value:daysToGo,        fr:"Jours avant le coup d'envoi", en:"Days to kick-off", accent:true },
+    { icon:"📅", value:d.duration_days, fr:"Jours de tournoi", en:"Days of action", ar:"أيام البطولة" },
+    { icon:"👟", value:d.players,       fr:"Joueurs",          en:"Players",        ar:"لاعبون" },
+    { icon:"⏳", value:daysToGo,        fr:"Jours avant le coup d'envoi", en:"Days to kick-off", ar:"أيام حتى البداية", accent:true },
   ];
   const stats = base.concat(live ? liveStats : preStats);
 
@@ -2042,7 +2154,7 @@ function renderTournamentStats() {
     <div class="stat-card${s.accent ? ' stat-accent' : ''}">
       <div class="stat-icon">${s.icon}</div>
       <div class="stat-value">${s.value}</div>
-      <div class="stat-label">${currentLang==='fr' ? s.fr : s.en}</div>
+      <div class="stat-label">${s[currentLang] || s.en}</div>
     </div>
   `).join('');
 }
@@ -2054,12 +2166,12 @@ function renderStatLeaders() {
   const el = document.getElementById('stats-leaders');
   if (!el) return;
   const s = DATA.stats;
-  const fr = currentLang === 'fr';
 
   if (!s || (!s.matchesPlayed && !s.topScorer && !s.bestAttack)) {
-    el.innerHTML = `<div class="stats-empty">${fr
-      ? "📊 Les statistiques détaillées (buts, moyenne, meilleure attaque/défense, plus large victoire, meilleur buteur…) <b>se rempliront automatiquement dès le coup d'envoi</b> le 11 juin."
-      : "📊 Detailed stats (goals, average, best attack/defense, biggest win, top scorer…) <b>fill in automatically from kick-off</b> on 11 June."}</div>`;
+    el.innerHTML = `<div class="stats-empty">${tr(
+      "📊 Les statistiques détaillées (buts, moyenne, meilleure attaque/défense, plus large victoire, meilleur buteur…) <b>se rempliront automatiquement dès le coup d'envoi</b> le 11 juin.",
+      "📊 Detailed stats (goals, average, best attack/defense, biggest win, top scorer…) <b>fill in automatically from kick-off</b> on 11 June.",
+      "📊 الإحصائيات التفصيلية (الأهداف، المعدل، أفضل هجوم/دفاع، أكبر فوز، الهداف…) <b>ستمتلئ تلقائياً منذ ضربة البداية</b> في 11 يونيو.")}</div>`;
     return;
   }
 
@@ -2074,19 +2186,19 @@ function renderStatLeaders() {
     </div>`;
 
   const c = [];
-  if (s.topScorer) c.push(card('👟', fr ? 'Meilleur buteur' : 'Top scorer',
-    `${s.topScorer.flag || ''} ${s.topScorer.name}`, `${s.topScorer.goals} ${fr ? 'buts' : 'goals'} · ${s.topScorer.team}`));
-  if (s.topAssist) c.push(card('🅰️', fr ? 'Meilleur passeur' : 'Top assists',
-    `${s.topAssist.flag || ''} ${s.topAssist.name}`, `${s.topAssist.assists} ${fr ? 'passes' : 'assists'} · ${s.topAssist.team}`));
-  if (s.bestAttack) c.push(card('⚔️', fr ? 'Meilleure attaque' : 'Best attack',
-    `${s.bestAttack.flag} ${s.bestAttack.name}`, `${s.bestAttack.value} ${fr ? 'buts marqués' : 'goals scored'}`));
-  if (s.bestDefense) c.push(card('🛡️', fr ? 'Meilleure défense' : 'Best defense',
-    `${s.bestDefense.flag} ${s.bestDefense.name}`, `${s.bestDefense.value} ${fr ? 'buts encaissés' : 'goals conceded'}`));
-  if (s.mostWins) c.push(card('🏅', fr ? 'Plus de victoires' : 'Most wins',
-    `${s.mostWins.flag} ${s.mostWins.name}`, `${s.mostWins.value} ${fr ? 'victoires' : 'wins'}`));
-  if (s.biggestWin) c.push(card('💥', fr ? 'Plus large victoire' : 'Biggest win', s.biggestWin, '', true));
+  if (s.topScorer) c.push(card('👟', tr('Meilleur buteur', 'Top scorer', 'الهداف'),
+    `${s.topScorer.flag || ''} ${s.topScorer.name}`, `${s.topScorer.goals} ${tr('buts', 'goals', 'أهداف')} · ${s.topScorer.team}`));
+  if (s.topAssist) c.push(card('🅰️', tr('Meilleur passeur', 'Top assists', 'صانع الأهداف'),
+    `${s.topAssist.flag || ''} ${s.topAssist.name}`, `${s.topAssist.assists} ${tr('passes', 'assists', 'تمريرات حاسمة')} · ${s.topAssist.team}`));
+  if (s.bestAttack) c.push(card('⚔️', tr('Meilleure attaque', 'Best attack', 'أفضل هجوم'),
+    `${s.bestAttack.flag} ${s.bestAttack.name}`, `${s.bestAttack.value} ${tr('buts marqués', 'goals scored', 'أهداف مسجلة')}`));
+  if (s.bestDefense) c.push(card('🛡️', tr('Meilleure défense', 'Best defense', 'أفضل دفاع'),
+    `${s.bestDefense.flag} ${s.bestDefense.name}`, `${s.bestDefense.value} ${tr('buts encaissés', 'goals conceded', 'أهداف مستقبَلة')}`));
+  if (s.mostWins) c.push(card('🏅', tr('Plus de victoires', 'Most wins', 'الأكثر انتصارات'),
+    `${s.mostWins.flag} ${s.mostWins.name}`, `${s.mostWins.value} ${tr('victoires', 'wins', 'انتصارات')}`));
+  if (s.biggestWin) c.push(card('💥', tr('Plus large victoire', 'Biggest win', 'أكبر فوز'), s.biggestWin, '', true));
   if (s.highestScoring && s.highestScoring !== s.biggestWin)
-    c.push(card('🔥', fr ? 'Match le plus prolifique' : 'Highest-scoring match', s.highestScoring, '', true));
+    c.push(card('🔥', tr('Match le plus prolifique', 'Highest-scoring match', 'المباراة الأكثر أهدافاً'), s.highestScoring, '', true));
 
   el.innerHTML = c.join('');
 }
@@ -2155,17 +2267,27 @@ function renderGroups() {
 let currentFilter = 'all';
 let currentRound = 'all';
 
+/* Morocco kick-off time 🇲🇦 — prefer the feed's timeMa (exact, Africa/Casablanca);
+   otherwise derive it from the ET string: ET (UTC-4) → Morocco (UTC+1) = +5 h
+   for the whole tournament window (June–July 2026). */
+function maTimeOf(m) {
+  if (m.timeMa) return m.timeMa;
+  const p = /^(\d{1,2}):(\d{2})\s*ET$/.exec(m.time || '');
+  if (!p) return '';
+  return String((parseInt(p[1], 10) + 5) % 24).padStart(2, '0') + ':' + p[2];
+}
+
 const ROUND_LABELS = {
-  all:  { fr:'Tous',       en:'All' },
-  G1:   { fr:'Groupes J1', en:'Groups · MD1' },
-  G2:   { fr:'Groupes J2', en:'Groups · MD2' },
-  G3:   { fr:'Groupes J3', en:'Groups · MD3' },
-  R32:  { fr:'1/16',       en:'R32' },
-  R16:  { fr:'1/8',        en:'R16' },
-  QF:   { fr:'1/4',        en:'QF' },
-  SF:   { fr:'1/2',        en:'SF' },
-  '3P': { fr:'3e place',   en:'3rd place' },
-  F:    { fr:'Finale',     en:'Final' },
+  all:  { fr:'Tous',       en:'All',          ar:'الكل' },
+  G1:   { fr:'Groupes J1', en:'Groups · MD1', ar:'المجموعات · ج1' },
+  G2:   { fr:'Groupes J2', en:'Groups · MD2', ar:'المجموعات · ج2' },
+  G3:   { fr:'Groupes J3', en:'Groups · MD3', ar:'المجموعات · ج3' },
+  R32:  { fr:'1/16',       en:'R32',          ar:'دور الـ32' },
+  R16:  { fr:'1/8',        en:'R16',          ar:'دور الـ16' },
+  QF:   { fr:'1/4',        en:'QF',           ar:'ربع النهائي' },
+  SF:   { fr:'1/2',        en:'SF',           ar:'نصف النهائي' },
+  '3P': { fr:'3e place',   en:'3rd place',    ar:'المركز الثالث' },
+  F:    { fr:'Finale',     en:'Final',        ar:'النهائي' },
 };
 const ROUND_ORDER = ['all','G1','G2','G3','R32','R16','QF','SF','3P','F'];
 
@@ -2178,7 +2300,7 @@ function renderRoundTabs() {
   const tabs = ROUND_ORDER.filter(r => r === 'all' || present.has(r));
   el.innerHTML = tabs.map(r => {
     const L = ROUND_LABELS[r];
-    const lbl = L ? (currentLang === 'fr' ? L.fr : L.en) : r;
+    const lbl = L ? (L[currentLang] || L.en) : r;
     const count = r === 'all' ? sched.length : sched.filter(m => m.round === r).length;
     return `<button class="round-tab ${r === currentRound ? 'active' : ''}" onclick="selectRound('${r}')">${lbl}<span class="rt-count">${count}</span></button>`;
   }).join('');
@@ -2222,7 +2344,7 @@ function renderMatches(filter) {
   if (filter !== 'all') matches = matches.filter(m => m.status === filter);
 
   if (!matches.length) {
-    list.innerHTML = `<div style="text-align:center;padding:40px;color:var(--text-muted)">Aucun match / No matches</div>`;
+    list.innerHTML = `<div style="text-align:center;padding:40px;color:var(--text-muted)">${tr('Aucun match', 'No matches', 'لا مباريات')}</div>`;
     return;
   }
 
@@ -2254,12 +2376,12 @@ function renderMatches(filter) {
         <div class="match-center">
           ${scoreHtml}
           <div class="match-meta">
-            ${m.opener ? `<div class="match-opener">${currentLang==='fr'?"★ Match d'ouverture":'★ Opening match'}</div>` : ''}
+            ${m.opener ? `<div class="match-opener">${tr("★ Match d'ouverture", '★ Opening match', '★ المباراة الافتتاحية')}</div>` : ''}
             ${badgeHtml}
             <div class="match-group-label">${t('match_group')} ${m.group}</div>
-            <div class="match-time">${m.time} · ${m.date}</div>
+            <div class="match-time">${m.time}${maTimeOf(m) ? ` · ${maTimeOf(m)} 🇲🇦` : ''} · ${m.date}</div>
             ${m.venue ? `<div class="match-venue">${m.venue}</div>` : ''}
-            ${clickable ? `<div class="match-detail-hint">${currentLang === 'fr' ? '🔎 Détail du match' : '🔎 Match details'}</div>` : ''}
+            ${clickable ? `<div class="match-detail-hint">${tr('🔎 Détail du match', '🔎 Match details', '🔎 تفاصيل المباراة')}</div>` : ''}
           </div>
         </div>
         <div class="match-team away">
@@ -2281,15 +2403,14 @@ const MATCH_URL = (window.WC26_API_BASE || '') + '/api/match';
 async function openMatchDetail(id) {
   const modal = document.getElementById('match-modal');
   const card = document.getElementById('match-modal-card');
-  const fr = currentLang === 'fr';
   modal.classList.add('open');
-  card.innerHTML = `<button class="mm-close" onclick="closeMatchDetail()">×</button><div class="mm-loading">${fr ? 'Chargement du détail…' : 'Loading match details…'}</div>`;
+  card.innerHTML = `<button class="mm-close" onclick="closeMatchDetail()">×</button><div class="mm-loading">${tr('Chargement du détail…', 'Loading match details…', 'جارٍ تحميل التفاصيل…')}</div>`;
   try {
     const res = await fetch(`${MATCH_URL}?id=${encodeURIComponent(id)}`, { cache: 'no-store' });
     if (!res.ok) throw new Error('HTTP ' + res.status);
     renderMatchDetail(await res.json());
   } catch (e) {
-    card.innerHTML = `<button class="mm-close" onclick="closeMatchDetail()">×</button><div class="mm-loading">${fr ? 'Détail indisponible pour ce match.' : 'Match details unavailable.'}</div>`;
+    card.innerHTML = `<button class="mm-close" onclick="closeMatchDetail()">×</button><div class="mm-loading">${tr('Détail indisponible pour ce match.', 'Match details unavailable.', 'التفاصيل غير متاحة لهذه المباراة.')}</div>`;
   }
 }
 
@@ -2303,15 +2424,16 @@ function renderMatchDetail(d) {
   const card = document.getElementById('match-modal-card');
   const ft = d.score?.ft || {}, ht = d.score?.ht || {}, pens = d.score?.pens;
   const hasScore = ft.home != null && ft.away != null;
-  const sub = [d.group ? (fr ? 'Groupe ' : 'Group ') + d.group : (d.stage || ''), d.date, d.venue].filter(Boolean).join(' · ');
+  const timeStr = d.time ? `${d.time}${maTimeOf(d) ? ` · ${maTimeOf(d)} 🇲🇦` : ''}` : '';
+  const sub = [d.group ? tr('Groupe ', 'Group ', 'المجموعة ') + d.group : (d.stage || ''), d.date, timeStr, d.venue].filter(Boolean).join(' · ');
 
   const goalRows = (d.goals || []).length
-    ? d.goals.map(g => `<div class="mm-row"><span class="mm-min">${g.minute || ''}'</span>⚽ ${g.scorer || '?'}${g.assist ? ` <span style="color:var(--text-muted)">(${fr ? 'passe' : 'assist'}: ${g.assist})</span>` : ''}<span style="margin-left:auto;color:var(--text-muted)">${g.team || ''}</span></div>`).join('')
-    : `<div class="mm-empty">${d.status === 'upcoming' ? (fr ? 'Match pas encore joué.' : 'Match not played yet.') : (fr ? 'Aucun but.' : 'No goals.')}</div>`;
+    ? d.goals.map(g => `<div class="mm-row"><span class="mm-min">${g.minute || ''}'</span>⚽ ${g.scorer || '?'}${g.assist ? ` <span style="color:var(--text-muted)">(${tr('passe', 'assist', 'تمريرة')}: ${g.assist})</span>` : ''}<span style="margin-left:auto;color:var(--text-muted)">${g.team || ''}</span></div>`).join('')
+    : `<div class="mm-empty">${d.status === 'upcoming' ? tr('Match pas encore joué.', 'Match not played yet.', 'المباراة لم تُلعب بعد.') : tr('Aucun but.', 'No goals.', 'لا أهداف.')}</div>`;
 
   const cardRows = (d.bookings || []).length
     ? d.bookings.map(b => `<div class="mm-row"><span class="mm-min">${b.minute || ''}'</span><span class="mm-card-${b.card === 'RED' ? 'red' : 'yellow'}"></span> ${b.player || '?'}<span style="margin-left:auto;color:var(--text-muted)">${b.team || ''}</span></div>`).join('')
-    : `<div class="mm-empty">${fr ? 'Aucun carton.' : 'No cards.'}</div>`;
+    : `<div class="mm-empty">${tr('Aucun carton.', 'No cards.', 'لا بطاقات.')}</div>`;
 
   const ref = (d.referees || [])[0] || null;
 
@@ -2335,19 +2457,19 @@ function renderMatchDetail(d) {
     const possBar = (poss && poss.home != null && poss.away != null)
       ? `<div class="mm-poss-bar"><span class="ph" style="width:${poss.home}%"></span><span class="pa" style="width:${poss.away}%"></span></div>` : '';
     const rows = [
-      row(fr ? 'Possession' : 'Possession', poss, v => v + '%'),
+      row(tr('Possession', 'Possession', 'الاستحواذ'), poss, v => v + '%'),
       possBar,
       row('xG', x.xg, v => Number(v).toFixed(2)),
-      row(fr ? 'Tirs' : 'Shots', x.shots),
-      row(fr ? 'Tirs cadrés' : 'On target', x.shotsOnTarget),
-      row(fr ? 'Grosses occasions' : 'Big chances', x.bigChances),
-      row(fr ? 'Corners' : 'Corners', x.corners),
-      row(fr ? 'Fautes' : 'Fouls', x.fouls),
-      row(fr ? 'Cartons jaunes' : 'Yellow cards', x.yellowCards),
-      row(fr ? 'Arrêts' : 'Saves', x.saves),
-      row(fr ? 'Passes réussies' : 'Accurate passes', x.passesAccurate),
+      row(tr('Tirs', 'Shots', 'تسديدات'), x.shots),
+      row(tr('Tirs cadrés', 'On target', 'على المرمى'), x.shotsOnTarget),
+      row(tr('Grosses occasions', 'Big chances', 'فرص محققة'), x.bigChances),
+      row(tr('Corners', 'Corners', 'ركنيات'), x.corners),
+      row(tr('Fautes', 'Fouls', 'أخطاء'), x.fouls),
+      row(tr('Cartons jaunes', 'Yellow cards', 'بطاقات صفراء'), x.yellowCards),
+      row(tr('Arrêts', 'Saves', 'تصديات'), x.saves),
+      row(tr('Passes réussies', 'Accurate passes', 'تمريرات ناجحة'), x.passesAccurate),
     ].join('');
-    if (rows.trim()) statsHtml = `<div class="mm-section"><div class="mm-section-t">📊 ${fr ? 'Statistiques' : 'Statistics'}</div>${rows}</div>`;
+    if (rows.trim()) statsHtml = `<div class="mm-section"><div class="mm-section-t">📊 ${tr('Statistiques', 'Statistics', 'الإحصائيات')}</div>${rows}</div>`;
   }
 
   card.innerHTML = `
@@ -2358,15 +2480,15 @@ function renderMatchDetail(d) {
         <div class="mm-score${hasScore ? '' : ' tbd'}">${hasScore ? `${ft.home} – ${ft.away}` : 'VS'}</div>
         <div class="mm-team"><span class="fl">${d.away.flag}</span><span class="nm">${d.away.name}</span></div>
       </div>
-      ${hasScore && ht.home != null ? `<div class="mm-sub">${fr ? 'Mi-temps' : 'Half-time'} ${ht.home} – ${ht.away}</div>` : ''}
-      ${pens ? `<div class="mm-pens">${fr ? 'Tirs au but' : 'Penalties'} ${pens.home} – ${pens.away}</div>` : ''}
+      ${hasScore && ht.home != null ? `<div class="mm-sub">${tr('Mi-temps', 'Half-time', 'الشوط الأول')} ${ht.home} – ${ht.away}</div>` : ''}
+      ${pens ? `<div class="mm-pens">${tr('Tirs au but', 'Penalties', 'ركلات الترجيح')} ${pens.home} – ${pens.away}</div>` : ''}
       <div class="mm-sub">${sub}</div>
     </div>
     ${statsHtml}
-    <div class="mm-section"><div class="mm-section-t">⚽ ${fr ? 'Buts' : 'Goals'}</div>${goalRows}</div>
-    <div class="mm-section"><div class="mm-section-t">🟨 ${fr ? 'Cartons' : 'Cards'}</div>${cardRows}</div>
-    ${ref ? `<div class="mm-section"><div class="mm-section-t">👤 ${fr ? 'Arbitre' : 'Referee'}</div><div class="mm-row">${ref}</div></div>` : ''}
-    ${statsHtml ? '' : `<div class="mm-sub" style="margin-top:14px;text-align:center">${fr ? 'Possession, tirs et xG : disponibles en branchant une source premium (voir README).' : 'Possession, shots and xG: available by plugging a premium source (see README).'}</div>`}
+    <div class="mm-section"><div class="mm-section-t">⚽ ${tr('Buts', 'Goals', 'الأهداف')}</div>${goalRows}</div>
+    <div class="mm-section"><div class="mm-section-t">🟨 ${tr('Cartons', 'Cards', 'البطاقات')}</div>${cardRows}</div>
+    ${ref ? `<div class="mm-section"><div class="mm-section-t">👤 ${tr('Arbitre', 'Referee', 'الحكم')}</div><div class="mm-row">${ref}</div></div>` : ''}
+    ${statsHtml ? '' : `<div class="mm-sub" style="margin-top:14px;text-align:center">${tr('Possession, tirs et xG : disponibles en branchant une source premium (voir README).', 'Possession, shots and xG: available by plugging a premium source (see README).', 'الاستحواذ والتسديدات وxG: متاحة عند ربط مصدر مدفوع (انظر README).')}</div>`}
   `;
 }
 
@@ -2392,11 +2514,12 @@ function renderScorers() {
     grid.innerHTML = `
       <div class="scorers-empty">
         <div class="scorers-empty-emoji">👟</div>
-        <div class="scorers-empty-title">${fr ? "La course au Soulier d'Or commence le 11 juin" : 'The Golden Boot race kicks off on 11 June'}</div>
-        <div class="scorers-empty-sub">${fr
-          ? "Le classement des buteurs et des passeurs se remplira automatiquement dès le premier but, via le flux de données en direct."
-          : 'Top scorers and assist leaders fill in automatically from the very first goal, via the live data feed.'}</div>
-        <div class="watch-label">${fr ? '★ Joueurs à suivre' : '★ Players to watch'}</div>
+        <div class="scorers-empty-title">${tr("La course au Soulier d'Or commence le 11 juin", 'The Golden Boot race kicks off on 11 June', 'سباق الحذاء الذهبي ينطلق في 11 يونيو')}</div>
+        <div class="scorers-empty-sub">${tr(
+          "Le classement des buteurs et des passeurs se remplira automatiquement dès le premier but, via le flux de données en direct.",
+          'Top scorers and assist leaders fill in automatically from the very first goal, via the live data feed.',
+          'سيمتلئ ترتيب الهدافين وصانعي الأهداف تلقائياً منذ أول هدف عبر البيانات المباشرة.')}</div>
+        <div class="watch-label">${tr('★ Joueurs à suivre', '★ Players to watch', '★ لاعبون تحت المجهر')}</div>
         <div class="watch-grid">${watch}</div>
       </div>`;
     return;
@@ -2474,7 +2597,7 @@ function renderTeams() {
         <div class="team-card-name">${team.name}</div>
         <div class="team-card-rank-row">
           <span class="team-card-rank">FIFA #${team.rank}</span>
-          <span class="team-card-group">${team.host ? (currentLang==='fr' ? '🏠 Hôte · ' : '🏠 Host · ') : ''}${t('match_group')} ${team.group}</span>
+          <span class="team-card-group">${team.host ? tr('🏠 Hôte · ', '🏠 Host · ', '🏠 مضيف · ') : ''}${t('match_group')} ${team.group}</span>
         </div>
         <div class="team-card-stats">
           <div class="team-stat-mini">
@@ -2501,8 +2624,9 @@ function renderTeams() {
 function renderNews() {
   const grid = document.getElementById('news-grid');
   grid.innerHTML = DATA.news.map((article, idx) => {
-    const title   = currentLang === 'fr' ? article.title_fr   : article.title_en;
-    const excerpt = currentLang === 'fr' ? article.excerpt_fr : article.excerpt_en;
+    const pick = base => article[base + '_' + currentLang] || article[base + '_fr'] || article[base + '_en'] || '';
+    const title   = pick('title');
+    const excerpt = pick('excerpt');
     return `
       <a href="${article.url}" class="news-card ${article.featured ? 'featured' : ''}" target="_blank" rel="noopener">
         <div class="news-img" style="background:linear-gradient(135deg,${article.color} 0%, #0c1722 100%)">
@@ -2561,7 +2685,8 @@ let dataStatus = { state: 'fallback', ts: null };
 let liveTimer = null;
 
 function fmtTime(ts) {
-  try { return new Date(ts).toLocaleTimeString(currentLang === 'fr' ? 'fr-CA' : 'en-CA', { hour:'2-digit', minute:'2-digit' }); }
+  const locale = currentLang === 'ar' ? 'ar-MA' : currentLang === 'fr' ? 'fr-CA' : 'en-CA';
+  try { return new Date(ts).toLocaleTimeString(locale, { hour:'2-digit', minute:'2-digit' }); }
   catch (e) { return ''; }
 }
 
@@ -2571,26 +2696,26 @@ function renderBanner() {
   const icon = el.querySelector('.icon');
   const msg  = el.querySelector('.msg');
   const btn  = el.querySelector('.refresh-btn');
-  const fr = currentLang === 'fr';
   el.classList.remove('is-live', 'is-loading');
   btn.style.display = '';
-  btn.textContent = fr ? '↻ Actualiser' : '↻ Refresh';
+  btn.textContent = tr('↻ Actualiser', '↻ Refresh', '↻ تحديث');
 
   if (dataStatus.state === 'loading') {
     el.classList.add('is-loading');
     icon.textContent = '⏳';
-    msg.textContent = fr ? 'Mise à jour des données…' : 'Refreshing data…';
+    msg.textContent = tr('Mise à jour des données…', 'Refreshing data…', 'جارٍ تحديث البيانات…');
     btn.style.display = 'none';
   } else if (dataStatus.state === 'live') {
     el.classList.add('is-live');
     icon.textContent = '🟢';
-    msg.textContent = (fr ? 'Données en direct via le service IA' : 'Live data via the AI service')
-      + (dataStatus.ts ? ' · ' + (fr ? 'maj ' : 'upd ') + fmtTime(dataStatus.ts) : '');
+    msg.textContent = tr('Données en direct', 'Live data', 'بيانات مباشرة')
+      + (dataStatus.ts ? ' · ' + tr('maj ', 'upd ', 'حُدِّث ') + fmtTime(dataStatus.ts) : '');
   } else {
     icon.textContent = '📡';
-    msg.textContent = fr
-      ? "Données officielles d'avant-tournoi (tirage, calendrier, classement FIFA). Lancez le service IA pour le direct."
-      : 'Official pre-tournament data (draw, schedule, FIFA ranking). Start the AI service for live updates.';
+    msg.textContent = tr(
+      "Données officielles d'avant-tournoi (tirage, calendrier, classement FIFA). Lancez le service pour le direct.",
+      'Official pre-tournament data (draw, schedule, FIFA ranking). Start the data service for live updates.',
+      'بيانات رسمية لما قبل البطولة (القرعة، الجدول، تصنيف الفيفا). شغّل الخدمة للبث المباشر.');
   }
 }
 
@@ -2635,7 +2760,9 @@ function init() {
   // Set initial language from storage/default
   document.getElementById('btn-fr').classList.toggle('active', currentLang === 'fr');
   document.getElementById('btn-en').classList.toggle('active', currentLang === 'en');
+  document.getElementById('btn-ar').classList.toggle('active', currentLang === 'ar');
   document.documentElement.lang = currentLang;
+  document.documentElement.dir = currentLang === 'ar' ? 'rtl' : 'ltr';
 
   // Render static i18n
   document.querySelectorAll('[data-i18n]').forEach(el => {
