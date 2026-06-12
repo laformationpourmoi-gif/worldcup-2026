@@ -1111,6 +1111,13 @@ footer {
 }
 .show-all-btn:hover { background: var(--border); color: var(--text-primary); }
 
+/* On phones the standings table is wider than the screen: let it swipe
+   horizontally instead of clipping the last columns. */
+@media (max-width: 768px) {
+  .group-card { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+  .standings-table { min-width: 520px; }
+}
+
 /* ── Pre-tournament additions ── */
 .stat-card.stat-accent { border-color: rgba(255,193,7,0.45); background: linear-gradient(160deg, rgba(255,193,7,0.10), rgba(255,255,255,0.02)); }
 .stat-card.stat-accent .stat-value { color: var(--gold); }
